@@ -7,5 +7,5 @@ expect object Library {
 }
 
 fun sayHelloWrapper(): String {
-    return sayHello()
+    return sayHelloo()
 }
