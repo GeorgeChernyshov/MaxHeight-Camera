@@ -1,4 +1,4 @@
-rootProject.name = "Camera"
+rootProject.name = "MaxHeight-Camera"
 enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
 
 pluginManagement {
@@ -28,4 +28,5 @@ dependencyResolutionManagement {
     }
 }
 
-include(":composeApp")
+include(":demo:composeApp")
+include(":camera")
