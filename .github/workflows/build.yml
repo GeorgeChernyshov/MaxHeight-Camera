@@ -52,6 +52,6 @@ jobs:
             -scheme iosApp \
             -configuration Debug \
             -sdk iphonesimulator \
-            -destination 'platform=iOS Simulator,OS=latest' \
+            -destination 'platform=iOS Simulator,OS=26.2' \
             build \
             CODE_SIGNING_ALLOWED=NO
