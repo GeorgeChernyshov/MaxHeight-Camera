@@ -4,9 +4,6 @@ description: 'Checkout, set up Java and prepare Gradle'
 runs:
   using: "composite"
   steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-
     - name: set up JDK 17
       uses: actions/setup-java@v4
       with:

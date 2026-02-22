@@ -5,39 +5,43 @@ on:
     branches: ["master"]
 
 jobs:
-  # --- JOB 1: LIBRARY ANDROID ---
   build-library-android:
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v4 # This MUST come first
       - name: Setup
-        uses: ./.github/actions/setup-project
+        uses: ./.github/actions/setup-project # Now it can find this file
       - name: Build Library (Android)
         run: ./gradlew :camera:assembleDebug
 
-  # --- JOB 2: LIBRARY IOS ---
   build-library-ios:
     runs-on: macos-latest
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
       - name: Setup
         uses: ./.github/actions/setup-project
       - name: Build Library (iOS)
         run: ./gradlew :camera:iosSimulatorArm64Binaries
 
-  # --- JOB 3: APP ANDROID ---
   build-app-android:
     needs: build-library-android
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
       - name: Setup
         uses: ./.github/actions/setup-project
       - name: Build App (Android)
         run: ./gradlew :demo:composeApp:assembleDebug
 
-  # --- JOB 4: APP IOS ---
   build-app-ios:
     needs: build-library-ios
     runs-on: macos-latest
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
       - name: Setup
         uses: ./.github/actions/setup-project
       - name: Build App (iOS)
