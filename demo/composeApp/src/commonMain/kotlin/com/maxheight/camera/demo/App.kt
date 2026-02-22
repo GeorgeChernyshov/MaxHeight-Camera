@@ -14,7 +14,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
-import com.maxheight.camera.Library
+import com.maxheight.camera.sayHelloWrapper
 import org.jetbrains.compose.resources.painterResource
 import maxheight_camera.demo.composeapp.generated.resources.Res
 import maxheight_camera.demo.composeapp.generated.resources.compose_multiplatform
@@ -42,7 +42,7 @@ fun App() {
                 ) {
                     Image(painterResource(Res.drawable.compose_multiplatform), null)
                     Text("Compose: $greeting")
-                    Text(Library.sayHello())
+                    Text(sayHelloWrapper())
                 }
             }
         }
