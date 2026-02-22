@@ -42,7 +42,17 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+
       - name: Setup
         uses: ./.github/actions/setup-project
-      - name: Build App (iOS)
-        run: ./gradlew :demo:composeApp:iosSimulatorArm64Binaries
+
+      - name: Build App (Kotlin + Swift)
+        run: |
+          xcodebuild -project demo/iosApp/iosApp.xcodeproj \
+            -scheme iosApp \
+            -configuration Debug \
+            -sdk iphonesimulator \
+            -destination "platform=iOS Simulator,name=iPhone 17" \
+            ONLY_ACTIVE_ARCH=NO \
+            CODE_SIGNING_ALLOWED=NO \
+            build
