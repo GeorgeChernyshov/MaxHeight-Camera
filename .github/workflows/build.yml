@@ -1,26 +1,48 @@
-name: Build library and demo app
+name: Multiplatform Build Pipeline
 
 on:
   pull_request:
     branches: ["master"]
 
 jobs:
-  build:
+  build-library-android:
     runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4 # This MUST come first
+      - name: Setup
+        uses: ./.github/actions/setup-project # Now it can find this file
+      - name: Build Library (Android)
+        run: ./gradlew :camera:assembleDebug
 
+  build-library-ios:
+    runs-on: macos-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+      - name: Setup
+        uses: ./.github/actions/setup-project
+      - name: Build Library (iOS)
+        run: ./gradlew :camera:iosSimulatorArm64Binaries
 
-      - name: set up JDK 17
-        uses: actions/setup-java@v4
-        with:
-          java-version: '17'
-          distribution: 'temurin'
-          cache: gradle
+  build-app-android:
+    needs: build-library-android
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Setup
+        uses: ./.github/actions/setup-project
+      - name: Build App (Android)
+        run: ./gradlew :demo:composeApp:assembleDebug
 
-      - name: Grant execute permission for gradlew
-        run: chmod +x gradlew
-
-      - name: Build with Gradle
-        run: ./gradlew assembleDebug
+  build-app-ios:
+    needs: build-library-ios
+    runs-on: macos-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Setup
+        uses: ./.github/actions/setup-project
+      - name: Build App (iOS)
+        run: ./gradlew :demo:composeApp:iosSimulatorArm64Binaries
