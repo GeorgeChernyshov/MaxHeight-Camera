@@ -6,6 +6,4 @@ expect object Library {
     fun sayHello(): String
 }
 
-fun sayHelloWrapper(): String {
-    return sayHello()
-}
+fun sayHelloWrapper() = sayHello()
