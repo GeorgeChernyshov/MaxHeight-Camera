@@ -1,0 +1,10 @@
+<resources>
+    <string name="camera_active">Camera Active</string>
+    <string name="camera_inactive">Camera Inactive</string>
+    <string name="pause_recording">Pause Recording</string>
+    <string name="recording_active">Recording active</string>
+    <string name="recording_paused">Recording paused</string>
+    <string name="resume_recording">Resume Recording</string>
+    <string name="start_recording">Start Recording</string>
+    <string name="stop_recording">Stop Recording</string>
+</resources>
