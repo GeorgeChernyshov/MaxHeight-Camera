@@ -8,6 +8,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.launch
 import platform.AVFoundation.AVCaptureDevice
 import platform.AVFoundation.AVCaptureDeviceDiscoverySession
 import platform.AVFoundation.AVCaptureDeviceInput
@@ -19,7 +20,6 @@ import platform.AVFoundation.AVCaptureMovieFileOutput
 import platform.AVFoundation.AVCaptureSession
 import platform.AVFoundation.AVCaptureSessionPresetHigh
 import platform.AVFoundation.AVCaptureVideoDataOutput
-import platform.AVFoundation.AVCaptureVideoOrientationLandscapeRight
 import platform.AVFoundation.AVCaptureVideoPreviewLayer
 import platform.AVFoundation.AVLayerVideoGravityResizeAspectFill
 import platform.AVFoundation.AVMediaTypeVideo
@@ -46,7 +46,7 @@ actual class Camera {
     private var sampleBufferDelegate = VideoDataOutputSampleBufferDelegate()
     private val captureFileOutputDelegate = CaptureFileOutputDelegate()
 
-    private val serviceScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
+    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
 
     actual fun start(
         cameraType: CameraType,
@@ -124,7 +124,10 @@ actual class Camera {
             }
 
             onBeforeStart()
-            session.startRunning()
+            scope.launch {
+                session.startRunning()
+            }
+
             _state.value = _state.value.copy(cameraStarted = true)
             onAfterStart()
         } catch (e: Exception) {
@@ -168,12 +171,6 @@ actual class Camera {
         if (captureSession?.canAddOutput(output) == true) {
             captureSession?.addOutput(output)
             captureSession?.commitConfiguration()
-            if (output.connections.isNotEmpty()) {
-                val videoConnection = output.connectionWithMediaType(AVMediaTypeVideo)
-                if (videoConnection != null && videoConnection.isVideoOrientationSupported()) {
-                    videoConnection.videoOrientation = AVCaptureVideoOrientationLandscapeRight
-                }
-            }
         } else {
             println("CameraHandler: Failed to add movie file output to session.")
         }
@@ -230,15 +227,19 @@ actual class Camera {
         previewLayer?.frame = view.bounds
     }
 
-    private fun attachPreview(containerView: UIView) {
-        val session = captureSession ?: return
+    private fun attachPreview(containerView: UIView) = scope.launch(Dispatchers.Main) {
+        val session = captureSession ?: return@launch
+
+        if (previewLayer?.session == session) {
+            previewLayer?.frame = containerView.bounds
+            return@launch
+        }
 
         previewLayer = AVCaptureVideoPreviewLayer(
             session = session
         ).apply {
             frame = containerView.bounds
             videoGravity = AVLayerVideoGravityResizeAspectFill
-            connection?.videoOrientation = AVCaptureVideoOrientationLandscapeRight
         }
 
         containerView.layer.addSublayer(previewLayer!!)

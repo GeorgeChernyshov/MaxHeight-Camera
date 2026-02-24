@@ -2,7 +2,6 @@ package com.maxheight.camera
 
 import android.view.ViewGroup
 import androidx.camera.view.PreviewView
-import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.viewinterop.AndroidView
@@ -24,7 +23,7 @@ actual fun CameraPreview(
                 attachToCamera(this)
             }
         },
-        modifier = modifier.aspectRatio(16f/9f),
+        modifier = modifier,
         update = onUpdate
     )
 }

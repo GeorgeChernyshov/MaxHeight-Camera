@@ -53,7 +53,6 @@ fun App(
     val cameraState = camera.state.collectAsState()
     val coroutineScope = rememberCoroutineScope()
     var eventsCollector by remember { mutableStateOf<Job?>(null) }
-    var isShowingPreview by remember { mutableStateOf(false) }
 
     DisposableEffect(Unit) {
         eventsCollector = coroutineScope.launch {
@@ -61,7 +60,6 @@ fun App(
                 when (event) {
                     PermissionsEvent.CameraPermissionGranted -> {
                         camera.start()
-                        isShowingPreview = true
                     }
 
                     PermissionsEvent.AudioRecordingPermissionGranted -> {
@@ -96,7 +94,7 @@ fun App(
         Box(Modifier.fillMaxSize()
             .safeDrawingPadding()
         ) {
-            if (isShowingPreview) {
+            if (cameraState.value.cameraStarted) {
                 CameraPreview(
                     modifier = Modifier.fillMaxSize(),
                     attachToCamera = camera::attachPreview,
