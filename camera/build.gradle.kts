@@ -26,6 +26,14 @@ kotlin {
     }
 
     sourceSets {
+        androidInstrumentedTest.dependencies {
+            implementation(libs.androidx.testExt.junit)
+            implementation(libs.androidx.test.rules)
+            implementation(libs.androidx.activity.compose)
+            implementation(libs.kotlin.test)
+            implementation(libs.kotlinx.coroutines.test)
+        }
+
         androidMain.dependencies {
             implementation(libs.androidx.camera.camera2)
             implementation(libs.androidx.camera.lifecycle)
@@ -51,6 +59,7 @@ android {
     defaultConfig {
         minSdk = libs.versions.android.minSdk.get().toInt()
         targetSdk = libs.versions.android.targetSdk.get().toInt()
+        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
     packaging {
         resources {
