@@ -5,6 +5,16 @@ plugins {
     alias(libs.plugins.androidLibrary)
     alias(libs.plugins.composeMultiplatform)
     alias(libs.plugins.composeCompiler)
+    alias(libs.plugins.detekt)
+}
+
+detekt {
+    toolVersion = "1.23.8"
+    config.setFrom(files("$rootDir/config/detekt/detekt.yml"))
+    // Points to the source of your code
+    source.setFrom("src/commonMain/kotlin", "src/androidMain/kotlin", "src/iosMain/kotlin")
+    // Use the default configuration
+    buildUponDefaultConfig = true
 }
 
 kotlin {
@@ -86,6 +96,14 @@ android {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
     }
+    lint {
+        abortOnError = true
+        warningsAsErrors = true
+        // Optional: specifically check for issues related to libraries
+        checkReleaseBuilds = true
+        // Generates an HTML/XML report you can view if it fails
+        textReport = true
+    }
 }
 
 tasks.withType<org.jetbrains.kotlin.gradle.targets.native.tasks.KotlinNativeTest> {
@@ -95,6 +113,10 @@ tasks.withType<org.jetbrains.kotlin.gradle.targets.native.tasks.KotlinNativeTest
         showCauses = true
         showStackTraces = true
     }
+}
+
+tasks.withType<io.gitlab.arturbosch.detekt.Detekt>().configureEach {
+    jvmTarget = "21"
 }
 
 dependencies {

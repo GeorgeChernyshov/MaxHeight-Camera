@@ -95,7 +95,7 @@ actual class Camera(private val context: Context) {
                     videoCaptureInternal
                 )
 
-            } catch (ex: Exception) {
+            } catch (ex: IllegalStateException) {
                 onError(ex)
             }
         }, ContextCompat.getMainExecutor(context))
@@ -196,7 +196,9 @@ actual class Camera(private val context: Context) {
         currentPreviewView = null
     }
 
-    actual fun onPreviewUpdate(view: Any) {}
+    actual fun onPreviewUpdate(view: Any) {
+        // No-op: Android's PreviewView handles updates internally via the SurfaceProvider
+    }
 
     fun setLifecycleOwner(owner: LifecycleOwner) {
         lifecycleOwner = owner

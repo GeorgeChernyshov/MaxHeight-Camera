@@ -5,7 +5,26 @@ on:
     branches: ["master"]
 
 jobs:
+  static-analysis:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Setup
+        uses: ./.github/actions/setup-project
+      - name: Run Android Lint
+        run: ./gradlew :camera:lintRelease
+      - name: Upload Lint Report
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-lint-report
+          path: camera/build/reports/lint-results-release.html
+      - name: Run Detekt
+        run: ./gradlew :camera:detekt
+
   build-library-android:
+    needs: static-analysis
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -16,6 +35,7 @@ jobs:
         run: ./gradlew :camera:assembleDebug
 
   build-library-ios:
+    needs: static-analysis
     runs-on: macos-latest
     steps:
       - name: Checkout code

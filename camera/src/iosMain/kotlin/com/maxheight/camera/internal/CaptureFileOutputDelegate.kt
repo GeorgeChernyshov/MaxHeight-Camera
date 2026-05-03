@@ -6,7 +6,7 @@ import platform.Foundation.NSError
 import platform.Foundation.NSURL
 import platform.darwin.NSObject
 
-internal class CaptureFileOutputDelegate() :
+internal class CaptureFileOutputDelegate :
     NSObject(),
     AVCaptureFileOutputRecordingDelegateProtocol {
 
