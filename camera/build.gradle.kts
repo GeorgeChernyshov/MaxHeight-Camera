@@ -138,7 +138,7 @@ mavenPublishing {
     coordinates(
         groupId = "io.github.georgechernyshov",
         artifactId = "camera",
-        version = "1.0.1"
+        version = System.getenv("GITHUB_REF_NAME") ?: "1.0.0-SNAPSHOT"
     )
 
     pom {

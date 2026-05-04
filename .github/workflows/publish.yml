@@ -1,6 +1,11 @@
 name: Publish to Maven Central and GitHub Packages
 
-on: workflow_dispatch
+on:
+  push:
+    tags:
+      - '[0-9]*'        # Matches tags starting with a number
+      - '![0-9]*-alpha*' # Excludes alpha tags
+      - '![0-9]*-beta*'  # Excludes beta tags
 
 jobs:
   publish:
