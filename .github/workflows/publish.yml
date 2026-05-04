@@ -1,12 +1,17 @@
 name: Publish to Maven Central and GitHub Packages
 
-on: workflow_dispatch
+on:
+  push:
+    tags:
+      - '[0-9]*'        # Matches tags starting with a number
+      - '![0-9]*-alpha*' # Excludes alpha tags
+      - '![0-9]*-beta*'  # Excludes beta tags
 
 jobs:
   publish:
     runs-on: macos-latest # Required to build and publish iOS targets
     permissions:
-      contents: read
+      contents: write
       packages: write
 
     steps:
@@ -26,7 +31,7 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           files: |
-            demo/build/outputs/apk/release/*.aar
+            demo/build/outputs/aar/release/*.aar
           tag_name: ${{ github.ref_name }}
           generate_release_notes: true
 

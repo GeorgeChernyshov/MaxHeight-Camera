@@ -1,0 +1,25 @@
+name: Codex PR Review
+
+on:
+  pull_request_target:
+    types: [opened, reopened]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+concurrency:
+  group: codex-review-${{ github.event.pull_request.number || github.event.issue.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  codex-review:
+    runs-on: ubuntu-latest
+    outputs:
+      summary: ${{ steps.parse_review.outputs.summary }}
+      findings_json: ${{ steps.parse_review.outputs.findings_json }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Run Codex review
+        uses: openai/codex-action@v1
