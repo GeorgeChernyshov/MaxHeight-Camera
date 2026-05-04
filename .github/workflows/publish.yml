@@ -1,0 +1,39 @@
+name: Publish to Maven Central and GitHub Packages
+
+on: workflow_dispatch
+
+jobs:
+  publish:
+    runs-on: macos-latest # Required to build and publish iOS targets
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup
+        uses: ./.github/actions/setup-project
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+
+      - name: Build library
+        run: ./gradlew :camera:assembleRelease
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            demo/build/outputs/apk/release/*.aar
+          tag_name: ${{ github.ref_name }}
+          generate_release_notes: true
+
+      - name: Publish to Maven Central and GitHub Packages
+        run: ./gradlew publishToMavenCentral
+        env:
+          ORG_GRADLE_PROJECT_mavenCentralUsername: ${{ secrets.MAVEN_CENTRAL_USERNAME }}
+          ORG_GRADLE_PROJECT_mavenCentralPassword: ${{ secrets.MAVEN_CENTRAL_PASSWORD }}
+          ORG_GRADLE_PROJECT_signingInMemoryKey: ${{ secrets.SIGNING_KEY }}
+          ORG_GRADLE_PROJECT_signingInMemoryKeyPassword: ${{ secrets.SIGNING_KEY_PASSWORD }}

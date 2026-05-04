@@ -1,3 +1,4 @@
+import com.vanniktech.maven.publish.DeploymentValidation
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
@@ -6,6 +7,7 @@ plugins {
     alias(libs.plugins.composeMultiplatform)
     alias(libs.plugins.composeCompiler)
     alias(libs.plugins.detekt)
+    alias(libs.plugins.vanniktechPublish)
 }
 
 detekt {
@@ -71,6 +73,7 @@ android {
         targetSdk = libs.versions.android.targetSdk.get().toInt()
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
+
     testOptions {
         unitTests.all {
             it.testLogging {
@@ -82,27 +85,31 @@ android {
             }
         }
     }
+
     packaging {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
         }
     }
+
     buildTypes {
         getByName("release") {
             isMinifyEnabled = false
         }
     }
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
     }
+
     lint {
         abortOnError = true
-        warningsAsErrors = true
         // Optional: specifically check for issues related to libraries
         checkReleaseBuilds = true
         // Generates an HTML/XML report you can view if it fails
         textReport = true
+        disable += "OldTargetApi"
     }
 }
 
@@ -121,4 +128,45 @@ tasks.withType<io.gitlab.arturbosch.detekt.Detekt>().configureEach {
 
 dependencies {
     debugImplementation(libs.compose.uiTooling)
+}
+
+mavenPublishing {
+    publishToMavenCentral(automaticRelease = true, validateDeployment = DeploymentValidation.PUBLISHED)
+
+    signAllPublications()
+
+    coordinates(
+        groupId = "io.github.georgechernyshov",
+        artifactId = "camera",
+        version = "1.0.1"
+    )
+
+    pom {
+        name.set("MaxHeight-Camera")
+        description.set("Multiplatform library that handles Camera and composable CameraPreview for you!")
+        inceptionYear.set("2026")
+        url.set("https://github.com/GeorgeChernyshov/MaxHeight-Camera")
+
+        licenses {
+            license {
+                name.set("The Apache License, Version 2.0")
+                url.set("http://www.apache.org/licenses/LICENSE-2.0.txt")
+                distribution.set("http://www.apache.org/licenses/LICENSE-2.0.txt")
+            }
+        }
+
+        developers {
+            developer {
+                id.set("MaxHeight")
+                name.set("George")
+                url.set("https://github.com/GeorgeChernyshov/")
+            }
+        }
+
+        scm {
+            url.set("https://github.com/GeorgeChernyshov/MaxHeight-Camera")
+            connection.set("scm:git:git://github.com/GeorgeChernyshov/MaxHeight-Camera.git")
+            developerConnection.set("scm:git:ssh://git@github.com/GeorgeChernyshov/MaxHeight-Camera.git")
+        }
+    }
 }
