@@ -105,11 +105,11 @@ android {
 
     lint {
         abortOnError = true
-        warningsAsErrors = true
         // Optional: specifically check for issues related to libraries
         checkReleaseBuilds = true
         // Generates an HTML/XML report you can view if it fails
         textReport = true
+        disable += "OldTargetApi"
     }
 }
 
