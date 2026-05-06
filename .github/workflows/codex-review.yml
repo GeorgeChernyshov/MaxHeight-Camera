@@ -29,12 +29,25 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Build Codex prompt
+        shell: bash
+        run: |
+          cat .github/codex/prompts/review.md > /tmp/codex_prompt.md
+          echo "" >> /tmp/codex_prompt.md
+          echo "AGENTS instructions (from HEAD):" >> /tmp/codex_prompt.md
+          cat AGENTS.md >> /tmp/codex_prompt.md
+          echo "" >> /tmp/codex_prompt.md
+          echo "Review only the PR changes using:" >> /tmp/codex_prompt.md
+          echo "git diff ${{ needs.resolve-pr-context.outputs.base_sha }}...${{ needs.resolve-pr-context.outputs.head_sha }}" >> /tmp/codex_prompt.md
+          echo "" >> /tmp/codex_prompt.md
+          echo "For any inline comment, first find the exact line number with: nl -ba <file>." >> /tmp/codex_prompt.md
+
       - name: Run Codex review
         id: codex
         uses: openai/codex-action@v1
         with:
           openai-api-key: ${{ secrets.OPENAI_API_KEY }}
-          prompt-file: AGENTS.md
+          prompt-file: /tmp/codex_prompt.md
           sandbox: read-only
 
       - name: Debug Output
@@ -58,3 +71,16 @@ jobs:
               core.setFailed(`Codex output is not valid JSON: ${err.message}`);
               return;
             }
+            
+            const findings = comments
+              .filter((c) => c && c.path && Number.isInteger(c.line))
+              .map((c, idx) => ({
+                finding_index: idx,
+                path: c.path,
+                line: c.line,
+                body: c.body || c.summary || c.message || 'Codex review comment.',
+              }));
+            
+            core.info(`Parsed findings: ${findings.length}`);
+            core.setOutput('summary', summary);
+            core.setOutput('findings_json', JSON.stringify(findings));
