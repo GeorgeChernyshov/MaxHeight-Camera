@@ -127,7 +127,7 @@ jobs:
             core.setOutput('findings_json', JSON.stringify(findings));
 
   codex-match-and-post:
-    needs: codex-review
+    needs: [resolve-pr-context, codex-review]
     runs-on: ubuntu-latest
     steps:
       - name: Post review findings
