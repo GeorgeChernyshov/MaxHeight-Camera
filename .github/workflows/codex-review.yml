@@ -32,6 +32,7 @@ jobs:
         uses: actions/github-script@v7
         with:
           script: |
+            const eventName = context.eventName;
             let pr = context.payload.pull_request;
             
             if (!pr && eventName === 'issue_comment') {
@@ -173,4 +174,17 @@ jobs:
                   comments: [],
                 });
               }
+            
+              return;
+            }
+            
+            if (findings.length === 0) {
+              await github.rest.pulls.createReview({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                pull_number: pullNumber,
+                event: 'APPROVE',
+                body: summary,
+                comments: [],
+              });
             }
