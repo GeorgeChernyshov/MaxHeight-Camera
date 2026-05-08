@@ -140,11 +140,37 @@ jobs:
           script: |
             const summary = process.env.SUMMARY || 'Codex review completed.';
             const pullNumber = Number(process.env.PULL_NUMBER);
-            await github.rest.pulls.createReview({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              pull_number: pullNumber,
-              event: 'REQUEST_CHANGES',
-              body: summary,
-              comments: [],
-            });
+            const findings = JSON.parse(process.env.FINDINGS_JSON || '[]');
+            
+            const newReviewComments = [];
+            for (const finding of findings) {
+              newReviewComments.push({
+                path: finding.path,
+                line: finding.line,
+                side: 'RIGHT',
+                body: finding.body,
+              });
+              core.info(`Finding ${finding.finding_index} treated as new_thread`);
+            }
+            
+            if (newReviewComments.length > 0) {
+              try {
+                await github.rest.pulls.createReview({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  pull_number: pullNumber,
+                  event: 'COMMENT',
+                  body: summary,
+                  comments: newReviewComments,
+                });
+              } catch (err) {
+                await github.rest.pulls.createReview({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  pull_number: pullNumber,
+                  event: 'REQUEST_CHANGES',
+                  body: summary,
+                  comments: [],
+                });
+              }
+            }
