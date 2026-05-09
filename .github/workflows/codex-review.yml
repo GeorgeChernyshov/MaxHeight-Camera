@@ -271,19 +271,62 @@ jobs:
             }
             
             const newReviewComments = [];
+            const groupedReplies = new Map();
+            
             for (const finding of findings) {
               const action = actionByIndex.get(finding.finding_index);
               const shouldReply = action &&
                 action.action === 'reply_existing' &&
                 Number.isInteger(action.target_comment_id);
             
-              newReviewComments.push({
-                path: finding.path,
-                line: finding.line,
-                side: 'RIGHT',
-                body: finding.body,
+              if (shouldReply) {
+                const key = String(action.target_comment_id);
+                const existing = groupedReplies.get(key) || [];
+                existing.push({
+                  body: finding.body,
+                  path: finding.path,
+                  line: finding.line,
+                  reason: action.reason || '',
+                });
+            
+                groupedReplies.set(key, existing);
+                core.info(`Finding ${finding.finding_index} matched existing comment ${key}`);
+              } else {
+                newReviewComments.push({
+                  path: finding.path,
+                  line: finding.line,
+                  side: 'RIGHT',
+                  body: finding.body,
+                });
+            
+                core.info(`Finding ${finding.finding_index} treated as new_thread`);
+              }
+            }
+            
+            for (const [commentId, matchedFindings] of groupedReplies.entries()) {
+              const lines = matchedFindings.map((f) => `- \`${f.path}:${f.line}\` ${f.body}`);
+              const reasons = matchedFindings
+                .map((f) => f.reason)
+                .filter(Boolean)
+                .map((r) => `- ${r}`);
+            
+              const replyBody = [
+                'Codex follow-up: this issue still appears related to this unresolved thread.',
+                '',
+                '**Current findings**',
+                ...lines,
+                reasons.length ? '' : null,
+                reasons.length ? '**Matching rationale**' : null,
+                ...reasons,
+              ].filter(Boolean).join('\n');
+
+              await github.rest.pulls.createReplyForReviewComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                pull_number: pullNumber,
+                comment_id: Number(commentId),
+                body: replyBody,
               });
-              core.info(`Finding ${finding.finding_index} treated as new_thread`);
             }
             
             if (newReviewComments.length > 0) {
