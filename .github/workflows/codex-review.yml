@@ -340,6 +340,12 @@ jobs:
                   comments: newReviewComments,
                 });
               } catch (err) {
+                const message = err?.message || '';
+                const isUnresolvedLine = err?.status === 422 && message.includes('Line could not be resolved');
+                if (!isUnresolvedLine) {
+                  throw err;
+                }
+            
                 await github.rest.pulls.createReview({
                   owner: context.repo.owner,
                   repo: context.repo.repo,
@@ -349,6 +355,26 @@ jobs:
                   comments: [],
                 });
               }
+            
+              return;
+            }
+            
+            if (findings.length > 0) {
+              const matchedOnlySummary = [
+                summary,
+                '',
+                'No new inline findings were identified in this run.',
+                'Existing unresolved issues remain, and follow-up comments were posted on related existing review threads.',
+              ].join('\n');
+
+              await github.rest.pulls.createReview({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                pull_number: pullNumber,
+                event: 'COMMENT',
+                body: matchedOnlySummary,
+                comments: [],
+              });
             
               return;
             }
