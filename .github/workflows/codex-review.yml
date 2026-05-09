@@ -91,6 +91,7 @@ jobs:
         id: codex
         uses: openai/codex-action@v1
         with:
+          model: gpt-5.4-mini
           openai-api-key: ${{ secrets.OPENAI_API_KEY }}
           prompt-file: /tmp/codex_prompt.md
           sandbox: read-only
@@ -239,6 +240,7 @@ jobs:
         id: codex_match
         uses: openai/codex-action@v1
         with:
+          model: gpt-5.4-nano
           openai-api-key: ${{ secrets.OPENAI_API_KEY }}
           prompt-file: /tmp/codex_match_prompt.md
           sandbox: read-only
@@ -271,19 +273,62 @@ jobs:
             }
             
             const newReviewComments = [];
+            const groupedReplies = new Map();
+            
             for (const finding of findings) {
               const action = actionByIndex.get(finding.finding_index);
               const shouldReply = action &&
                 action.action === 'reply_existing' &&
                 Number.isInteger(action.target_comment_id);
             
-              newReviewComments.push({
-                path: finding.path,
-                line: finding.line,
-                side: 'RIGHT',
-                body: finding.body,
+              if (shouldReply) {
+                const key = String(action.target_comment_id);
+                const existing = groupedReplies.get(key) || [];
+                existing.push({
+                  body: finding.body,
+                  path: finding.path,
+                  line: finding.line,
+                  reason: action.reason || '',
+                });
+            
+                groupedReplies.set(key, existing);
+                core.info(`Finding ${finding.finding_index} matched existing comment ${key}`);
+              } else {
+                newReviewComments.push({
+                  path: finding.path,
+                  line: finding.line,
+                  side: 'RIGHT',
+                  body: finding.body,
+                });
+            
+                core.info(`Finding ${finding.finding_index} treated as new_thread`);
+              }
+            }
+            
+            for (const [commentId, matchedFindings] of groupedReplies.entries()) {
+              const lines = matchedFindings.map((f) => `- \`${f.path}:${f.line}\` ${f.body}`);
+              const reasons = matchedFindings
+                .map((f) => f.reason)
+                .filter(Boolean)
+                .map((r) => `- ${r}`);
+            
+              const replyBody = [
+                'Codex follow-up: this issue still appears related to this unresolved thread.',
+                '',
+                '**Current findings**',
+                ...lines,
+                reasons.length ? '' : null,
+                reasons.length ? '**Matching rationale**' : null,
+                ...reasons,
+              ].filter(Boolean).join('\n');
+
+              await github.rest.pulls.createReplyForReviewComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                pull_number: pullNumber,
+                comment_id: Number(commentId),
+                body: replyBody,
               });
-              core.info(`Finding ${finding.finding_index} treated as new_thread`);
             }
             
             if (newReviewComments.length > 0) {
@@ -297,6 +342,12 @@ jobs:
                   comments: newReviewComments,
                 });
               } catch (err) {
+                const message = err?.message || '';
+                const isUnresolvedLine = err?.status === 422 && message.includes('Line could not be resolved');
+                if (!isUnresolvedLine) {
+                  throw err;
+                }
+            
                 await github.rest.pulls.createReview({
                   owner: context.repo.owner,
                   repo: context.repo.repo,
@@ -306,6 +357,26 @@ jobs:
                   comments: [],
                 });
               }
+            
+              return;
+            }
+            
+            if (findings.length > 0) {
+              const matchedOnlySummary = [
+                summary,
+                '',
+                'No new inline findings were identified in this run.',
+                'Existing unresolved issues remain, and follow-up comments were posted on related existing review threads.',
+              ].join('\n');
+
+              await github.rest.pulls.createReview({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                pull_number: pullNumber,
+                event: 'COMMENT',
+                body: matchedOnlySummary,
+                comments: [],
+              });
             
               return;
             }
