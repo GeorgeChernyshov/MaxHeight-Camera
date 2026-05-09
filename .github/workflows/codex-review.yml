@@ -249,14 +249,34 @@ jobs:
           SUMMARY: ${{ needs.codex-review.outputs.summary }}
           FINDINGS_JSON: ${{ needs.codex-review.outputs.findings_json }}
           PULL_NUMBER: ${{ needs.resolve-pr-context.outputs.pull_number }}
+          MATCH_RAW: ${{ steps.codex_match.outputs.final-message }}
         with:
           script: |
             const summary = process.env.SUMMARY || 'Codex review completed.';
             const pullNumber = Number(process.env.PULL_NUMBER);
             const findings = JSON.parse(process.env.FINDINGS_JSON || '[]');
             
+            let actions = [];
+            try {
+              const parsed = JSON.parse(process.env.MATCH_RAW || '{}');
+              actions = Array.isArray(parsed.actions) ? parsed.actions : [];
+            } catch (err) {
+              core.warning(`Codex matcher output parse failed. Falling back to new_thread for all findings: ${err.message}`);
+            }
+
+            const actionByIndex = new Map();
+            for (const a of actions) {
+              if (!a || !Number.isInteger(a.finding_index)) continue;
+              actionByIndex.set(a.finding_index, a);
+            }
+            
             const newReviewComments = [];
             for (const finding of findings) {
+              const action = actionByIndex.get(finding.finding_index);
+              const shouldReply = action &&
+                action.action === 'reply_existing' &&
+                Number.isInteger(action.target_comment_id);
+            
               newReviewComments.push({
                 path: finding.path,
                 line: finding.line,
