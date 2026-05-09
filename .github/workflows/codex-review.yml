@@ -207,6 +207,33 @@ jobs:
           - Prefer reply_existing when the unresolved thread and new finding are similar or related in intent.
           - Consider path, nearby line, and semantic meaning of the issue.
           - If uncertain, choose new_thread.
+          
+          Output strict JSON only:
+          {
+            "actions": [
+              {
+                "finding_index": 0,
+                "action": "new_thread | reply_existing",
+                "target_comment_id": 123456789,
+                "reason": "short reason"
+              }
+            ]
+          }
+
+          Rules:
+          - Include exactly one action per finding_index.
+          - For action=new_thread, omit target_comment_id.
+          - For action=reply_existing, include target_comment_id from unresolved threads input.
+          EOF
+
+          {
+            echo ""
+            echo "New findings JSON:"
+            echo '${{ needs.codex-review.outputs.findings_json }}'
+            echo ""
+            echo "Unresolved review threads JSON:"
+            echo '${{ steps.unresolved.outputs.threads_json }}'
+          } >> /tmp/codex_match_prompt.md
 
       - name: Run Codex matcher
         id: codex_match
