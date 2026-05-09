@@ -91,6 +91,7 @@ jobs:
         id: codex
         uses: openai/codex-action@v1
         with:
+          model: gpt-5.4-mini
           openai-api-key: ${{ secrets.OPENAI_API_KEY }}
           prompt-file: /tmp/codex_prompt.md
           sandbox: read-only
@@ -239,6 +240,7 @@ jobs:
         id: codex_match
         uses: openai/codex-action@v1
         with:
+          model: gpt-5.4-nano
           openai-api-key: ${{ secrets.OPENAI_API_KEY }}
           prompt-file: /tmp/codex_match_prompt.md
           sandbox: read-only
