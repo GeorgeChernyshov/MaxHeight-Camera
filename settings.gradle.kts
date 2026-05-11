@@ -28,5 +28,7 @@ dependencyResolutionManagement {
     }
 }
 
+includeBuild("build-logic")
+
 include(":demo:composeApp")
 include(":camera")
