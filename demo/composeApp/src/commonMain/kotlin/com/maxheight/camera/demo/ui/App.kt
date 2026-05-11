@@ -12,12 +12,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
@@ -27,8 +23,6 @@ import com.maxheight.camera.CameraPreview
 import com.maxheight.camera.demo.domain.model.PermissionsEvent
 import com.maxheight.camera.demo.domain.repository.LocalStorageRepository
 import com.maxheight.camera.demo.domain.repository.PermissionsRepository
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.launch
 import maxheight_camera.demo.composeapp.generated.resources.Res
 import maxheight_camera.demo.composeapp.generated.resources.camera_active
 import maxheight_camera.demo.composeapp.generated.resources.ic_pause_24
@@ -44,49 +38,45 @@ import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
-@Preview
 fun App(
     camera: Camera,
     permissionsRepository: PermissionsRepository,
     localStorageRepository: LocalStorageRepository
 ) {
     val cameraState = camera.state.collectAsState()
-    val coroutineScope = rememberCoroutineScope()
-    var eventsCollector by remember { mutableStateOf<Job?>(null) }
+    LaunchedEffect(Unit) {
+        permissionsRepository.events.collect { event ->
+            when (event) {
+                PermissionsEvent.CameraPermissionGranted -> {
+                    camera.start()
+                }
 
-    DisposableEffect(Unit) {
-        eventsCollector = coroutineScope.launch {
-            permissionsRepository.events.collect { event ->
-                when (event) {
-                    PermissionsEvent.CameraPermissionGranted -> {
-                        camera.start()
-                    }
-
-                    PermissionsEvent.AudioRecordingPermissionGranted -> {
-                        camera.startRecording(
-                            file = localStorageRepository.createTempFile(),
-                            onRecordingFinalized = { path, _ ->
-                                path?.let {
-                                    localStorageRepository.deleteLocalFile(it)
-                                }
+                PermissionsEvent.AudioRecordingPermissionGranted -> {
+                    camera.startRecording(
+                        file = localStorageRepository.createTempFile(),
+                        onRecordingFinalized = { path, _ ->
+                            path?.let {
+                                localStorageRepository.deleteLocalFile(it)
                             }
-                        )
-                    }
+                        }
+                    )
                 }
             }
         }
+    }
 
+    LaunchedEffect(Unit) {
         if (permissionsRepository.hasCameraPermission) {
             camera.start()
         } else {
             permissionsRepository.requestCameraPermission()
         }
+    }
 
+    DisposableEffect(camera) {
         onDispose {
             camera.removePreview()
             camera.stop()
-            eventsCollector?.cancel()
-            eventsCollector = null
         }
     }
 
