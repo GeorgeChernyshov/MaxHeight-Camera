@@ -1,31 +1,11 @@
-import com.vanniktech.maven.publish.DeploymentValidation
-import org.jetbrains.kotlin.gradle.dsl.JvmTarget
-
 plugins {
-    alias(libs.plugins.kotlinMultiplatform)
-    alias(libs.plugins.androidLibrary)
-    alias(libs.plugins.composeMultiplatform)
-    alias(libs.plugins.composeCompiler)
-    alias(libs.plugins.detekt)
-    alias(libs.plugins.vanniktechPublish)
-}
-
-detekt {
-    toolVersion = "1.23.8"
-    config.setFrom(files("$rootDir/config/detekt/detekt.yml"))
-    // Points to the source of your code
-    source.setFrom("src/commonMain/kotlin", "src/androidMain/kotlin", "src/iosMain/kotlin")
-    // Use the default configuration
-    buildUponDefaultConfig = true
+    alias(libs.plugins.maxheight.kmp.library)
+    alias(libs.plugins.maxheight.lint)
+    alias(libs.plugins.maxheight.publishing)
+    alias(libs.plugins.maxheight.compose)
 }
 
 kotlin {
-    androidTarget {
-        compilerOptions {
-            jvmTarget.set(JvmTarget.JVM_11)
-        }
-    }
-
     listOf(
         iosX64(),
         iosArm64(),
@@ -52,121 +32,9 @@ kotlin {
             implementation(libs.androidx.camera.view)
             implementation(libs.guava)
         }
-
-        commonMain.dependencies {
-            implementation(libs.compose.runtime)
-            implementation(libs.compose.foundation)
-        }
-
-        commonTest.dependencies {
-            implementation(libs.kotlin.test)
-        }
     }
 }
 
 android {
     namespace = "com.maxheight.camera"
-    compileSdk = libs.versions.android.compileSdk.get().toInt()
-
-    defaultConfig {
-        minSdk = libs.versions.android.minSdk.get().toInt()
-        targetSdk = libs.versions.android.targetSdk.get().toInt()
-        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-    }
-
-    testOptions {
-        unitTests.all {
-            it.testLogging {
-                events("passed", "skipped", "failed", "standardOut", "standardError")
-                showExceptions = true
-                exceptionFormat = org.gradle.api.tasks.testing.logging.TestExceptionFormat.FULL
-                showCauses = true
-                showStackTraces = true
-            }
-        }
-    }
-
-    packaging {
-        resources {
-            excludes += "/META-INF/{AL2.0,LGPL2.1}"
-        }
-    }
-
-    buildTypes {
-        getByName("release") {
-            isMinifyEnabled = false
-        }
-    }
-
-    compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
-    }
-
-    lint {
-        abortOnError = true
-        // Optional: specifically check for issues related to libraries
-        checkReleaseBuilds = true
-        // Generates an HTML/XML report you can view if it fails
-        textReport = true
-        disable += "OldTargetApi"
-    }
-}
-
-tasks.withType<org.jetbrains.kotlin.gradle.targets.native.tasks.KotlinNativeTest> {
-    testLogging {
-        events("passed", "skipped", "failed", "standardOut", "standardError")
-        exceptionFormat = org.gradle.api.tasks.testing.logging.TestExceptionFormat.FULL
-        showCauses = true
-        showStackTraces = true
-    }
-}
-
-tasks.withType<io.gitlab.arturbosch.detekt.Detekt>().configureEach {
-    jvmTarget = "21"
-}
-
-dependencies {
-    debugImplementation(libs.compose.uiTooling)
-}
-
-mavenPublishing {
-    publishToMavenCentral(automaticRelease = true, validateDeployment = DeploymentValidation.PUBLISHED)
-
-    signAllPublications()
-
-    coordinates(
-        groupId = "io.github.georgechernyshov",
-        artifactId = "camera",
-        version = System.getenv("GITHUB_REF_NAME") ?: "1.0.0-SNAPSHOT"
-    )
-
-    pom {
-        name.set("MaxHeight-Camera")
-        description.set("Multiplatform library that handles Camera and composable CameraPreview for you!")
-        inceptionYear.set("2026")
-        url.set("https://github.com/GeorgeChernyshov/MaxHeight-Camera")
-
-        licenses {
-            license {
-                name.set("The Apache License, Version 2.0")
-                url.set("http://www.apache.org/licenses/LICENSE-2.0.txt")
-                distribution.set("http://www.apache.org/licenses/LICENSE-2.0.txt")
-            }
-        }
-
-        developers {
-            developer {
-                id.set("MaxHeight")
-                name.set("George")
-                url.set("https://github.com/GeorgeChernyshov/")
-            }
-        }
-
-        scm {
-            url.set("https://github.com/GeorgeChernyshov/MaxHeight-Camera")
-            connection.set("scm:git:git://github.com/GeorgeChernyshov/MaxHeight-Camera.git")
-            developerConnection.set("scm:git:ssh://git@github.com/GeorgeChernyshov/MaxHeight-Camera.git")
-        }
-    }
 }

@@ -1,6 +1,3 @@
-rootProject.name = "MaxHeight-Camera"
-enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
-
 pluginManagement {
     repositories {
         google {
@@ -26,9 +23,11 @@ dependencyResolutionManagement {
         }
         mavenCentral()
     }
+
+    versionCatalogs {
+        create("libs") {
+            // Point to the same file used by the root project
+            from(files("../gradle/libs.versions.toml"))
+        }
+    }
 }
-
-includeBuild("build-logic")
-
-include(":demo:composeApp")
-include(":camera")
