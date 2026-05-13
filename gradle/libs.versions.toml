@@ -1,8 +1,8 @@
 [versions]
 agp = "8.13.2"
-android-compileSdk = "36"
-android-minSdk = "24"
-android-targetSdk = "36"
+compileSdk = "36"
+minSdk = "24"
+targetSdk = "36"
 androidx-activity = "1.12.2"
 androidx-appcompat = "1.7.1"
 androidx-core = "1.17.0"
@@ -19,6 +19,7 @@ androidx-camera = "1.3.3"
 kotlinx-coroutines = "1.10.2"
 detekt = "1.23.8"
 vanniktech-publish = "0.36.0"
+jvmTarget = "11"
 
 [libraries]
 kotlin-testJunit = { module = "org.jetbrains.kotlin:kotlin-test-junit", version.ref = "kotlin" }
@@ -50,11 +51,25 @@ androidx-testExt-junit = { module = "androidx.test.ext:junit", version.ref = "an
 androidx-test-rules = { module = "androidx.test:rules", version.ref = "androidx-testExt" }
 kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "kotlinx-coroutines" }
 
+#gradle-plugins
+kotlin-gradlePlugin = { group = "org.jetbrains.kotlin", name = "kotlin-gradle-plugin", version.ref = "kotlin" }
+android-gradlePlugin = { group = "com.android.tools.build", name = "gradle-api", version.ref = "agp" }
+detekt-gradlePlugin = { group = "io.gitlab.arturbosch.detekt", name = "detekt-gradle-plugin", version.ref = "detekt" }
+publish-gradlePlugin = { group = "com.vanniktech", name = "gradle-maven-publish-plugin", version.ref = "vanniktech-publish" }
+
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }
 androidLibrary = { id = "com.android.library", version.ref = "agp" }
 composeMultiplatform = { id = "org.jetbrains.compose", version.ref = "composeMultiplatform" }
 composeCompiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 detekt = { id = "io.gitlab.arturbosch.detekt", version.ref = "detekt" }
+kotlinJvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 kotlinMultiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
 vanniktechPublish = { id = "com.vanniktech.maven.publish", version.ref = "vanniktech-publish" }
+
+# Convention plugins
+maxheight-kmp-library = { id = "maxheight.kmp.library" }
+maxheight-kmp-application = { id = "maxheight.kmp.application" }
+maxheight-compose = { id = "maxheight.compose" }
+maxheight-lint = { id = "maxheight.lint" }
+maxheight-publishing = { id = "maxheight.publishing" }
