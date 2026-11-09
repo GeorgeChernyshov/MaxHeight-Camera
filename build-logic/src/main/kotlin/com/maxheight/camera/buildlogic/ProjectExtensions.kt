@@ -24,7 +24,6 @@ fun VersionCatalog.library(name: String) = findLibrary(name).get()
 val VersionCatalog.compileSdk: Int get() = version("compileSdk").toInt()
 val VersionCatalog.targetSdk: Int get() = version("targetSdk").toInt()
 val VersionCatalog.minSdk: Int get() = version("minSdk").toInt()
-val VersionCatalog.buildTools: String get() = version("buildTools")
 
 // Java version
 fun VersionCatalog.javaVersion(): JavaVersion =

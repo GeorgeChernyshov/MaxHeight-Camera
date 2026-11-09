@@ -6,6 +6,10 @@ plugins {
 }
 
 kotlin {
+    android {
+        namespace = "com.maxheight.camera"
+    }
+
     listOf(
         iosX64(),
         iosArm64(),
@@ -33,8 +37,4 @@ kotlin {
             implementation(libs.guava)
         }
     }
-}
-
-android {
-    namespace = "com.maxheight.camera"
 }
