@@ -8,6 +8,8 @@ plugins {
 kotlin {
     android {
         namespace = "com.maxheight.camera"
+        // Required by Compose 1.10's device-test assets integration.
+        androidResources.enable = true
     }
 
     listOf(
@@ -22,7 +24,7 @@ kotlin {
     }
 
     sourceSets {
-        androidInstrumentedTest.dependencies {
+        getByName("androidDeviceTest").dependencies {
             implementation(libs.androidx.testExt.junit)
             implementation(libs.androidx.test.rules)
             implementation(libs.androidx.activity.compose)

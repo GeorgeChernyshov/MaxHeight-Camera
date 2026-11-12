@@ -17,13 +17,13 @@ jobs:
       - name: Setup
         uses: ./.github/actions/setup-project
       - name: Run Android Lint
-        run: ./gradlew :camera:lintRelease
+        run: ./gradlew :camera:lint
       - name: Upload Lint Report
         if: failure()
         uses: actions/upload-artifact@v4
         with:
           name: android-lint-report
-          path: camera/build/reports/lint-results-release.html
+          path: camera/build/reports/lint-results*.html
       - name: Run Detekt
         run: ./gradlew :camera:detekt
 
@@ -36,7 +36,7 @@ jobs:
       - name: Setup
         uses: ./.github/actions/setup-project
       - name: Build Library (Android)
-        run: ./gradlew :camera:assembleDebug
+        run: ./gradlew :camera:assembleAndroidMain
 
   build-library-ios:
     needs: static-analysis
@@ -58,7 +58,7 @@ jobs:
       - name: Setup
         uses: ./.github/actions/setup-project
       - name: Run Unit Tests (Android)
-        run: ./gradlew :camera:testDebugUnitTest
+        run: ./gradlew :camera:testAndroidHostTest
 
   test-library-android-instrumented:
     needs: build-library-android
@@ -91,7 +91,7 @@ jobs:
           api-level: ${{ matrix.api-level }}
           arch: ${{ steps.avd-info.outputs.arch }}
           target: ${{ steps.avd-info.outputs.target }}
-          script: ./gradlew :camera:connectedDebugAndroidTest
+          script: ./gradlew :camera:connectedAndroidDeviceTest
 
   test-library-ios:
     needs: build-library-ios
@@ -113,7 +113,7 @@ jobs:
       - name: Setup
         uses: ./.github/actions/setup-project
       - name: Build App (Android)
-        run: ./gradlew :demo:composeApp:assembleDebug
+        run: ./gradlew :demo:androidApp:assembleDebug
 
   build-app-ios:
     needs: build-library-ios

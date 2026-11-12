@@ -67,6 +67,16 @@ jobs:
             core.setOutput('original_comment', originalComment.body || '');
             core.setOutput('thread_summary', JSON.stringify(threadSummary));
 
+      # Run the privileged setup from the workflow revision, before reading PR code.
+      - name: Checkout trusted workflow setup
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.workflow_sha }}
+          persist-credentials: false
+
+      - name: Set up Codex account
+        uses: ./.github/actions/setup-codex
+
       - name: Checkout PR head
         uses: actions/checkout@v4
         with:
@@ -157,6 +167,8 @@ jobs:
           model: gpt-5.4-nano
           openai-api-key: ${{ secrets.OPENAI_API_KEY }}
           prompt-file: /tmp/codex_reply_prompt.md
+          safety-strategy: unprivileged-user
+          codex-user: codex
           sandbox: read-only
 
       - name: Post thread reply

@@ -11,6 +11,7 @@ import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
 class LintPlugin : Plugin<Project> {
     override fun apply(target: Project) {
         with(target) {
+            pluginManager.apply(versionCatalog.plugin("androidLint"))
             pluginManager.apply(versionCatalog.plugin("detekt"))
 
             extensions.configure<KotlinMultiplatformExtension> {
