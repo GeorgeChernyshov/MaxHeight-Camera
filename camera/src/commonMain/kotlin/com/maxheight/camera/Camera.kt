@@ -9,8 +9,8 @@ expect class Camera {
         cameraType: CameraType = CameraType.BACK,
         onBeforeStart: () -> Unit = {},
         onAfterStart: () -> Unit = {},
-        onError: (Throwable) -> Unit = {},
-        onProcessFrame: ((Any) -> Unit)? = null
+        onError: (error: Throwable) -> Unit = {},
+        onProcessFrame: ((frame: Any) -> Unit)? = null
     )
 
     fun stop(
@@ -20,7 +20,7 @@ expect class Camera {
 
     fun startRecording(
         file: Any,
-        onRecordingFinalized: (String?, String?) -> Unit,
+        onRecordingFinalized: (path: String?, error: String?) -> Unit,
         onRecordingStarted: () -> Unit = {},
     )
 

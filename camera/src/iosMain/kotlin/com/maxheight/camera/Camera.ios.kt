@@ -7,7 +7,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import platform.AVFoundation.AVCaptureDevice
 import platform.AVFoundation.AVCaptureDeviceDiscoverySession
@@ -34,8 +34,8 @@ import platform.darwin.dispatch_queue_t
 @OptIn(ExperimentalForeignApi::class)
 actual class Camera {
 
-    private val _state = MutableStateFlow(CameraState())
-    actual val state = _state.asStateFlow()
+    actual val state: StateFlow<CameraState>
+        field = MutableStateFlow(CameraState())
 
     private var captureSession: AVCaptureSession? = null
     private var previewLayer: AVCaptureVideoPreviewLayer? = null
@@ -52,8 +52,8 @@ actual class Camera {
         cameraType: CameraType,
         onBeforeStart: () -> Unit,
         onAfterStart: () -> Unit,
-        onError: (Throwable) -> Unit,
-        onProcessFrame: ((Any) -> Unit)?
+        onError: (error: Throwable) -> Unit,
+        onProcessFrame: ((frame: Any) -> Unit)?
     ) {
         if (captureSession?.isRunning() == true) {
             println("CameraHandler: captureSession is already running.")
@@ -128,7 +128,7 @@ actual class Camera {
                 session.startRunning()
             }
 
-            _state.value = _state.value.copy(cameraStarted = true)
+            state.value = state.value.copy(cameraStarted = true)
             onAfterStart()
         } catch (e: Exception) {
             stop()
@@ -152,13 +152,13 @@ actual class Camera {
         videoDataOutput = null
         videoDataOutputQueue = null
 
-        _state.value = _state.value.copy(cameraStarted = false)
+        state.value = state.value.copy(cameraStarted = false)
         onAfterStop()
     }
 
     actual fun startRecording(
         file: Any,
-        onRecordingFinalized: (String?, String?) -> Unit,
+        onRecordingFinalized: (path: String?, error: String?) -> Unit,
         onRecordingStarted: () -> Unit
     ) {
         if (file !is NSURL) return
@@ -183,26 +183,26 @@ actual class Camera {
             recordingDelegate = captureFileOutputDelegate
         )
 
-        _state.value = _state.value.copy(isRecording = true)
+        state.value = state.value.copy(isRecording = true)
     }
 
     actual fun stopRecording(onRecordingStopped: () -> Unit) {
         if (movieFileOutput?.isRecording() == true)
             movieFileOutput?.stopRecording()
 
-        _state.value = _state.value.copy(isRecording = false)
+        state.value = state.value.copy(isRecording = false)
         onRecordingStopped()
     }
 
     actual fun pauseRecording(onRecordingPaused: () -> Unit) {
         movieFileOutput?.pauseRecording()
-        _state.value = _state.value.copy(isRecordingPaused = true)
+        state.value = state.value.copy(isRecordingPaused = true)
         onRecordingPaused()
     }
 
     actual fun resumeRecording(onRecordingResumed: () -> Unit) {
         movieFileOutput?.resumeRecording()
-        _state.value = _state.value.copy(isRecordingPaused = false)
+        state.value = state.value.copy(isRecordingPaused = false)
         onRecordingResumed()
     }
 
