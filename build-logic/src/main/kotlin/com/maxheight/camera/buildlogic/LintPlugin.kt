@@ -1,26 +1,27 @@
 package com.maxheight.camera.buildlogic
 
-import com.android.build.api.dsl.LibraryExtension
+import com.android.build.api.dsl.KotlinMultiplatformAndroidLibraryTarget
 import io.gitlab.arturbosch.detekt.extensions.DetektExtension
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.kotlin.dsl.configure
 import org.gradle.kotlin.dsl.withType
+import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
 
 class LintPlugin : Plugin<Project> {
     override fun apply(target: Project) {
         with(target) {
+            pluginManager.apply(versionCatalog.plugin("androidLint"))
             pluginManager.apply(versionCatalog.plugin("detekt"))
 
-            extensions.configure<LibraryExtension> {
-                lint {
-                    abortOnError = true
-                    // Optional: specifically check for issues related to libraries
-                    checkReleaseBuilds = true
-                    // Generates an HTML/XML report you can view if it fails
-                    textReport = true
-                    disable += "OldTargetApi"
-                }
+            extensions.configure<KotlinMultiplatformExtension> {
+                targets.withType<KotlinMultiplatformAndroidLibraryTarget>()
+                    .configureEach {
+                        lint {
+                            abortOnError = true
+                            disable += "OldTargetApi"
+                        }
+                    }
             }
 
             extensions.configure<DetektExtension> {

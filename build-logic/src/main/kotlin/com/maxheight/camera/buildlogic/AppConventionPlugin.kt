@@ -9,14 +9,27 @@ class AppConventionPlugin : Plugin<Project> {
     override fun apply(target: Project) {
         with(target) {
             with(pluginManager) {
-                apply(versionCatalog.plugin("kotlinMultiplatform"))
                 apply(versionCatalog.plugin("androidApplication"))
             }
 
-            configureKotlinMultiplatform()
-
             extensions.configure<ApplicationExtension> {
-                configureAndroidCommon(this)
+                compileSdk = versionCatalog.compileSdk
+
+                compileOptions.apply {
+                    sourceCompatibility = versionCatalog.javaVersion()
+                    targetCompatibility = versionCatalog.javaVersion()
+                }
+
+                packaging.apply {
+                    resources {
+                        excludes += "/META-INF/{AL2.0,LGPL2.1}"
+                    }
+                }
+
+                buildTypes.getByName("release") {
+                    isMinifyEnabled = false
+                }
+
                 defaultConfig {
                     minSdk = versionCatalog.minSdk
                     targetSdk = versionCatalog.targetSdk

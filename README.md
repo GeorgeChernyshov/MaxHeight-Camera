@@ -64,7 +64,7 @@ val camera = Camera(this).apply {
 }
 ```
 
-Import `com.maxheight.camera.Camera`. Keep this instance for the lifetime of the screen instead of recreating it on recomposition. See the demo's [MainActivity](demo/composeApp/src/androidMain/kotlin/com/maxheight/camera/demo/MainActivity.kt) for permission and lifecycle wiring.
+Import `com.maxheight.camera.Camera`. Keep this instance for the lifetime of the screen instead of recreating it on recomposition. See the demo's [MainActivity](demo/shared/src/androidMain/kotlin/com/maxheight/camera/demo/MainActivity.kt) for permission and lifecycle wiring.
 
 ### iOS
 
@@ -83,7 +83,7 @@ import com.maxheight.camera.Camera
 val camera = Camera()
 ```
 
-The demo's [iOS permission repository](demo/composeApp/src/iosMain/kotlin/com/maxheight/camera/demo/data/PermissionsRepositoryImpl.kt) shows how to check and request authorization.
+The demo's [iOS permission repository](demo/shared/src/iosMain/kotlin/com/maxheight/camera/demo/data/PermissionsRepositoryImpl.kt) shows how to check and request authorization.
 
 ## Show a preview
 
@@ -149,7 +149,7 @@ val outputFile = platform.Foundation.NSURL.fileURLWithPath(
 )
 ```
 
-Use a fresh destination for each recording. The demo includes platform-specific [Android](demo/composeApp/src/androidMain/kotlin/com/maxheight/camera/demo/data/LocalStorageRepositoryImpl.kt) and [iOS](demo/composeApp/src/iosMain/kotlin/com/maxheight/camera/demo/data/LocalStorageRepositoryImpl.kt) file helpers.
+Use a fresh destination for each recording. The demo includes platform-specific [Android](demo/shared/src/androidMain/kotlin/com/maxheight/camera/demo/data/LocalStorageRepositoryImpl.kt) and [iOS](demo/shared/src/iosMain/kotlin/com/maxheight/camera/demo/data/LocalStorageRepositoryImpl.kt) file helpers.
 
 Once the camera is running, shared code can control recording:
 
@@ -216,7 +216,7 @@ From the repository root, build the library and demo:
 ./gradlew :camera:assembleDebug :demo:composeApp:assembleDebug
 ```
 
-Run the Android demo through the `demo/composeApp` run configuration in Android Studio. On macOS, open [`demo/iosApp/iosApp.xcodeproj`](demo/iosApp/iosApp.xcodeproj) in Xcode, configure signing for your device, and run the `iosApp` scheme. Ensure the host has the camera usage description described above.
+Run the Android demo through the `demo/shared` run configuration in Android Studio. On macOS, open [`demo/iosApp/iosApp.xcodeproj`](demo/iosApp/iosApp.xcodeproj) in Xcode, configure signing for your device, and run the `iosApp` scheme. Ensure the host has the camera usage description described above.
 
 Run the checks used by CI:
 

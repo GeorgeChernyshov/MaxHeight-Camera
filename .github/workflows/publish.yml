@@ -25,13 +25,13 @@ jobs:
         run: chmod +x gradlew
 
       - name: Build library
-        run: ./gradlew :camera:assembleRelease
+        run: ./gradlew :camera:assembleAndroidMain
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
           files: |
-            demo/build/outputs/aar/release/*.aar
+            camera/build/outputs/aar/camera.aar
           tag_name: ${{ github.ref_name }}
           generate_release_notes: true
 

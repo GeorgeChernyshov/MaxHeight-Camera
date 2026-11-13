@@ -21,15 +21,15 @@ import androidx.camera.view.PreviewView
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.LifecycleOwner
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import java.io.File
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 
 actual class Camera(private val context: Context) {
 
-    private val _state = MutableStateFlow(CameraState())
-    actual val state = _state.asStateFlow()
+    actual val state: StateFlow<CameraState>
+        field = MutableStateFlow(CameraState())
 
     private var videoCaptureInternal: VideoCapture<Recorder>? = null
     private var cameraProvider: ProcessCameraProvider? = null
@@ -44,8 +44,8 @@ actual class Camera(private val context: Context) {
         cameraType: CameraType,
         onBeforeStart: () -> Unit,
         onAfterStart: () -> Unit,
-        onError: (Throwable) -> Unit,
-        onProcessFrame: ((Any) -> Unit)?
+        onError: (error: Throwable) -> Unit,
+        onProcessFrame: ((frame: Any) -> Unit)?
     ) {
         val cameraProviderFuture = ProcessCameraProvider.getInstance(context)
         cameraProviderFuture.addListener({
@@ -100,7 +100,7 @@ actual class Camera(private val context: Context) {
             }
         }, ContextCompat.getMainExecutor(context))
 
-        _state.value = _state.value.copy(cameraStarted = true)
+        state.value = state.value.copy(cameraStarted = true)
         onAfterStart()
     }
 
@@ -118,13 +118,13 @@ actual class Camera(private val context: Context) {
         imageAnalysisExecutor.shutdown()
         imageAnalysisExecutor = Executors.newSingleThreadExecutor()
 
-        _state.value = _state.value.copy(cameraStarted = false)
+        state.value = state.value.copy(cameraStarted = false)
         onAfterStop()
     }
 
     actual fun startRecording(
         file: Any,
-        onRecordingFinalized: (String?, String?) -> Unit,
+        onRecordingFinalized: (path: String?, error: String?) -> Unit,
         onRecordingStarted: () -> Unit
     ) {
         if (file !is File) return
@@ -160,26 +160,26 @@ actual class Camera(private val context: Context) {
                 }
             }
 
-        _state.value = _state.value.copy(isRecording = true)
+        state.value = state.value.copy(isRecording = true)
         onRecordingStarted()
     }
 
     actual fun stopRecording(onRecordingStopped: () -> Unit) {
         recording?.stop()
         recording = null
-        _state.value = _state.value.copy(isRecording = false)
+        state.value = state.value.copy(isRecording = false)
         onRecordingStopped()
     }
 
     actual fun pauseRecording(onRecordingPaused: () -> Unit) {
         recording?.pause()
-        _state.value = _state.value.copy(isRecordingPaused = true)
+        state.value = state.value.copy(isRecordingPaused = true)
         onRecordingPaused()
     }
 
     actual fun resumeRecording(onRecordingResumed: () -> Unit) {
         recording?.resume()
-        _state.value = _state.value.copy(isRecordingPaused = false)
+        state.value = state.value.copy(isRecordingPaused = false)
         onRecordingResumed()
     }
 

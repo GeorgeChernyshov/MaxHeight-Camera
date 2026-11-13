@@ -23,7 +23,7 @@ class ComposePlugin : Plugin<Project> {
             }
 
             dependencies.add(
-                "debugImplementation",
+                "androidRuntimeClasspath",
                 versionCatalog.library("compose-uiTooling")
             )
         }

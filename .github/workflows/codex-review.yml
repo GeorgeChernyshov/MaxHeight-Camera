@@ -68,11 +68,22 @@ jobs:
       summary: ${{ steps.parse_review.outputs.summary }}
       findings_json: ${{ steps.parse_review.outputs.findings_json }}
     steps:
+      # Run the privileged setup from the workflow revision, before reading PR code.
+      - name: Checkout trusted workflow setup
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.workflow_sha }}
+          persist-credentials: false
+
+      - name: Set up Codex account
+        uses: ./.github/actions/setup-codex
+
       - name: Checkout code
         uses: actions/checkout@v4
         with:
           ref: ${{ needs.resolve-pr-context.outputs.head_sha }}
           fetch-depth: 0
+          persist-credentials: false
 
       - name: Build Codex prompt
         shell: bash
@@ -94,6 +105,8 @@ jobs:
           model: gpt-5.4-mini
           openai-api-key: ${{ secrets.OPENAI_API_KEY }}
           prompt-file: /tmp/codex_prompt.md
+          safety-strategy: unprivileged-user
+          codex-user: codex
           sandbox: read-only
 
       - name: Parse Codex review output
